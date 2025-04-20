@@ -32,7 +32,6 @@ dependencies {
 
 	runtimeOnly("com.h2database:h2:2.2.224")
 	implementation("org.flywaydb:flyway-core")
-	implementation("me.paulschwarz:spring-dotenv:4.0.0")
 
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")

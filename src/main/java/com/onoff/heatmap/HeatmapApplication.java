@@ -10,7 +10,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 public class HeatmapApplication {
 
 	public static void main(String[] args) {
-
 		SpringApplication.run(HeatmapApplication.class, args);
 	}
 
