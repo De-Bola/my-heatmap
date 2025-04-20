@@ -1,12 +1,14 @@
 package com.onoff.heatmap.controllers.response;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.springframework.data.domain.Page;
 
-@Data
+@Getter
 @NoArgsConstructor
+@ToString
 public class SuccessResponse<T> {
     private T data;
     private String message;
@@ -28,7 +30,7 @@ public class SuccessResponse<T> {
         );
     }
 
-    @Data
+    @Getter
     @AllArgsConstructor
     public static class PageMetadata {
         private int size;

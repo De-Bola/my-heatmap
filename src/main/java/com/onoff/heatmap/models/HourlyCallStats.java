@@ -1,4 +1,4 @@
-package com.onoff.heatmap.repo;
+package com.onoff.heatmap.models;
 
 public interface HourlyCallStats {
     Integer getHour();

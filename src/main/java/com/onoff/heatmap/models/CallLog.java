@@ -2,10 +2,13 @@ package com.onoff.heatmap.models;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.sql.Timestamp;
+import java.util.Objects;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -14,6 +17,7 @@ import java.util.UUID;
         @Index(name = "idx_status", columnList = "STATUS"),
         @Index(name = "idx_started_at", columnList = "STARTED_AT")
 })
+@ToString
 public class CallLog {
 
     @Id
@@ -48,4 +52,22 @@ public class CallLog {
 
     @Column(name = "ENDED_AT", columnDefinition = "TIMESTAMP(3)", nullable = false)
     private Timestamp endedAt;
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        CallLog callLog = (CallLog) o;
+        return isIncoming() == callLog.isIncoming() && getDuration() == callLog.getDuration() && Objects.equals(getId(),
+                callLog.getId()) && Objects.equals(getUserId(), callLog.getUserId()) && Objects.equals(getUsername(),
+                callLog.getUsername()) && Objects.equals(getOnOffNumber(),
+                callLog.getOnOffNumber()) && Objects.equals(getContactNumber(),
+                callLog.getContactNumber()) && getStatus() == callLog.getStatus() && Objects.equals(getStartedAt(),
+                callLog.getStartedAt()) && Objects.equals(getEndedAt(), callLog.getEndedAt());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getUserId(), getUsername(), getOnOffNumber(), getContactNumber(), getStatus(),
+                isIncoming(), getDuration(), getStartedAt(), getEndedAt());
+    }
 }
