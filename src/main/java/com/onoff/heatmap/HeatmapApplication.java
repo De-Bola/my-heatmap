@@ -12,5 +12,5 @@ public class HeatmapApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(HeatmapApplication.class, args);
 	}
-
+	//uri -> http://localhost:8080/swagger-ui.html
 }

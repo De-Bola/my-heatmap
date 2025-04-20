@@ -36,6 +36,7 @@ dependencies {
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
 
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
 	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
 	implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
