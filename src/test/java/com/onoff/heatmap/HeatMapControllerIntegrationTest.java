@@ -3,6 +3,7 @@ package com.onoff.heatmap;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.onoff.heatmap.controllers.response.SuccessResponse;
+import com.onoff.heatmap.models.HourlyCallStatsDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -48,17 +51,37 @@ public class HeatMapControllerIntegrationTest {
     }
 
     @Test
-    void whenValidRequest_thenReturns200() throws URISyntaxException, JsonProcessingException {
+    void whenValidRequestMatchingNoDates_thenReturns200WithDefaultValues() throws URISyntaxException, JsonProcessingException {
         restTemplate = new TestRestTemplate().withBasicAuth("admin", "admin123");
         uri = new URI(baseUrl + ":" + port + "/api/heatmap/answer-rate?dateInput=2024-04-10&numberOfShades=7");
         ResponseEntity<SuccessResponse> responseEntity = restTemplate.getForEntity(uri, SuccessResponse.class);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(responseEntity.getBody()).isNotNull();
-        Object jsonObj = responseEntity.getBody();
-        assertThat(jsonObj).isInstanceOf(SuccessResponse.class);
-        String jsonStr = mapper.writeValueAsString(jsonObj);
+        String jsonStr = mapper.writeValueAsString(responseEntity.getBody());
         SuccessResponse<?> successResponse = mapper.readValue(jsonStr, SuccessResponse.class);
-        System.out.println(successResponse);
+        assertThat(successResponse.getData()).isNotNull();
+        List<HourlyCallStatsDto> hourlyStats = extractHourlyCallStatsFromResponse(successResponse);
+        assertThat(hourlyStats).isNotEmpty();
+        int sum = aggregateTotalCalls(hourlyStats);
+        assertThat(sum).isEqualTo(0);
+    }
+
+    private static int aggregateTotalCalls(List<HourlyCallStatsDto> hourlyStats) {
+        int sum = 0;
+        for (HourlyCallStatsDto stat : hourlyStats) {
+            sum += stat.getTotalCalls();
+        }
+        return sum;
+    }
+
+    private List<HourlyCallStatsDto> extractHourlyCallStatsFromResponse(SuccessResponse<?> successResponse) {
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> mappedData = (List<Map<String, Object>>) successResponse.getData();
+
+        return mappedData.stream()
+                .map(map -> mapper.convertValue(map, HourlyCallStatsDto.class)
+                )
+                .toList();
     }
 
     @Test
@@ -72,6 +95,10 @@ public class HeatMapControllerIntegrationTest {
         assertThat(jsonObj).isInstanceOf(SuccessResponse.class);
         String jsonStr = mapper.writeValueAsString(jsonObj);
         SuccessResponse<?> successResponse = mapper.readValue(jsonStr, SuccessResponse.class);
-        System.out.println(successResponse);
+        assertThat(successResponse.getData()).isNotNull();
+        List<HourlyCallStatsDto> hourlyStats = extractHourlyCallStatsFromResponse(successResponse);
+        assertThat(hourlyStats).isNotEmpty();
+        int sum = aggregateTotalCalls(hourlyStats);
+        assertThat(sum).isGreaterThan(0);
     }
 }
