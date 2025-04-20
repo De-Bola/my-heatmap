@@ -65,7 +65,7 @@ public class ControllerAdvice {
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ExceptionHandler({ MethodArgumentNotValidException.class, ConstraintViolationException.class })
     public ErrorResponse handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
         Map<String, String> errors = ex.getBindingResult().getFieldErrors().stream()
                 .collect(Collectors.toMap(
@@ -90,17 +90,5 @@ public class ControllerAdvice {
     public ErrorResponse handleAllExceptions(Exception ex) {
         log.error("Internal Server Error: ", ex);
         return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
-    }
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ErrorResponse handleConstraintViolation(ConstraintViolationException ex) {
-        Map<String, String> errors = new HashMap<>(ex.getConstraintViolations().stream()
-                .collect(Collectors.toMap(
-                        v -> v.getPropertyPath().toString(),
-                        ConstraintViolation::getMessage
-                )));
-        log.error("Constraint Violation: {}", errors);
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Constraint violation", errors);
     }
 }
