@@ -1,10 +1,11 @@
 package com.onoff.heatmap.models;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @NoArgsConstructor
-@Data
+@Getter
+@Setter
+@ToString
 public class HourlyCallStatsDto {
 
     private int hour;

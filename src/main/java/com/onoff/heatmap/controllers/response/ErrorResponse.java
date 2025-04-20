@@ -5,9 +5,10 @@ import lombok.*;
 import java.time.Instant;
 import java.util.Map;
 
-@Data
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class ErrorResponse {
     private String code;
     private String message;
