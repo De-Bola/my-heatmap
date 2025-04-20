@@ -14,8 +14,7 @@ public class SpringConstraintValidatorFactory implements ConstraintValidatorFact
 
     @Override
     public <T extends ConstraintValidator<?, ?>> T getInstance(Class<T> key) {
-        T instance = applicationContext.getAutowireCapableBeanFactory().createBean(key);
-        return instance;
+        return applicationContext.getAutowireCapableBeanFactory().createBean(key);
     }
 
     @Override

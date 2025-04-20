@@ -5,8 +5,6 @@ import com.onoff.heatmap.repo.CallLogRepository;
 import com.onoff.heatmap.models.HourlyCallStats;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -40,19 +38,4 @@ public class CallLogServiceImpl implements CallLogService {
 
         return result;
     }
-
-    @Override
-    public Page<HourlyCallStatsDto> getHourlyStatsPageable(LocalDate date, int numberOfShades, int startHour, int endHour, Pageable pageable) {
-        Page<HourlyCallStats> page = callLogRepository.getHourlyStatsByDateAndHourRange(date, startHour, endHour, pageable);
-
-        return page.map(stat -> new HourlyCallStatsDto(
-                stat.getHour(),
-                stat.getAnsweredCalls(),
-                stat.getTotalCalls(),
-                numberOfShades
-        ));
-    }
-
-
-
 }

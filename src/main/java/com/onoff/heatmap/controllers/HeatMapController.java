@@ -8,8 +8,6 @@ import com.onoff.heatmap.services.CallLogServiceImpl;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,9 +32,9 @@ public class HeatMapController {
         this.constraints = constraints;
     }
 
-
     @GetMapping("/answer-rate")
     public ResponseEntity<SuccessResponse<?>> getAnswerRate(@Valid RequestDto request) {
+        log.info("Received request for answer rate: {}", request);
         RequestDto validatedRequest = request.normalize(constraints);
 
         List<HourlyCallStatsDto> stats = callLogService.getHourlyStats(
@@ -48,28 +46,6 @@ public class HeatMapController {
                 stats,
                 String.format("%d hourly entries between %02d and %02d.",
                         stats.size(),
-                        validatedRequest.startHour(),
-                        validatedRequest.endHour())
-        );
-
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/pages/answer-rate")
-    public ResponseEntity<SuccessResponse<?>> getAnswerRate(@Valid RequestDto request, Pageable pageable) {
-        RequestDto validatedRequest = request.normalize(constraints);
-
-        Page<HourlyCallStatsDto> stats = callLogService.getHourlyStatsPageable(
-                validatedRequest.dateInput(),
-                validatedRequest.numberOfShades(),
-                validatedRequest.startHour(),
-                validatedRequest.endHour(),
-                pageable
-        );
-        SuccessResponse<List<HourlyCallStatsDto>> response = new SuccessResponse<>(
-                stats,
-                String.format("%d pages of entries found between %02d and %02d.",
-                        stats.getTotalPages(),
                         validatedRequest.startHour(),
                         validatedRequest.endHour())
         );

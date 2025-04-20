@@ -32,12 +32,10 @@ dependencies {
 
 	runtimeOnly("com.h2database:h2:2.2.224")
 	implementation("org.flywaydb:flyway-core")
+	implementation("me.paulschwarz:spring-dotenv:4.0.0")
 
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
-
-	implementation("org.mapstruct:mapstruct:1.5.5.Final")
-	annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
 
 	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
