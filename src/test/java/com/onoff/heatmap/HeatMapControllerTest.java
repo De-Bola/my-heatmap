@@ -1,15 +1,16 @@
 package com.onoff.heatmap;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.onoff.heatmap.config.RequestConstraintsProps;
+import com.onoff.heatmap.config.TestConfig;
 import com.onoff.heatmap.controllers.response.ErrorResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -24,10 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@TestPropertySource(properties = {
-        "spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1",
-        "spring.jpa.hibernate.ddl-auto=create-drop"
-})
+@Import(TestConfig.class)
 public class HeatMapControllerTest {
 
     @Autowired
@@ -38,12 +36,25 @@ public class HeatMapControllerTest {
 
     private MockMvc mockMvc;
 
+    @Autowired
+    private RequestConstraintsProps props;
+
+    private int numberOfShadesMin;
+    private int numberOfShadesMax;
+    private int hourMin;
+    private int hourMax;
+
     @BeforeEach
     public void setup() {
         mockMvc = MockMvcBuilders
                 .webAppContextSetup(webApplicationContext)
                 .apply(springSecurity())
                 .build();
+
+        this.numberOfShadesMin = props.getNumberOfShadesMin();
+        this.numberOfShadesMax = props.getNumberOfShadesMax();
+        this.hourMin = props.getHourMin();
+        this.hourMax = props.getHourMax();
     }
 
     @Test
@@ -53,7 +64,8 @@ public class HeatMapControllerTest {
                         .param("numberOfShades", "2")
                         .with(httpBasic("admin", "admin123")))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("Minimum numberOfShades is 3")));
+                .andExpect(content().string(
+                        containsString(String.format("must be between %d and %d", numberOfShadesMin, numberOfShadesMax))));
     }
 
     @Test
@@ -66,9 +78,9 @@ public class HeatMapControllerTest {
 
         String json = result.getResponse().getContentAsString();
         ErrorResponse errorResponse = objectMapper.readValue(json, ErrorResponse.class);
-        assertThat(errorResponse.getMessage()).isEqualTo("Constraint violation");
+        assertThat(errorResponse.getMessage()).isEqualTo("Validation failed");
         assertThat(Integer.parseInt(errorResponse.getCode())).isEqualTo(HttpStatus.BAD_REQUEST.value());
-        assertThat(errorResponse.getFieldErrors()).containsEntry("getAnswerRate.numberOfShades", "Maximum numberOfShades is 10");
+        assertThat(errorResponse.getFieldErrors()).containsEntry("numberOfShades", String.format("must be between %d and %d", numberOfShadesMin, numberOfShadesMax));
     }
 
     @Test
@@ -82,15 +94,15 @@ public class HeatMapControllerTest {
 
         String json = result.getResponse().getContentAsString();
         ErrorResponse errorResponse = objectMapper.readValue(json, ErrorResponse.class);
-        assertThat(errorResponse.getMessage()).isEqualTo("Constraint violation");
+        assertThat(errorResponse.getMessage()).isEqualTo("Validation failed");
         assertThat(Integer.parseInt(errorResponse.getCode())).isEqualTo(HttpStatus.BAD_REQUEST.value());
-        assertThat(errorResponse.getFieldErrors()).containsEntry("getAnswerRate.startHour", "must be less than or equal to 23");
+        assertThat(errorResponse.getFieldErrors()).containsEntry("startHour", String.format("must be between %d and %d", hourMin, hourMax));
     }
 
     @Test
     void whenMultipleConstraintViolations_thenReturns400() throws Exception {
         MvcResult result = mockMvc.perform(get("/api/heatmap/answer-rate")
-                        .param("dateInput", "2024/04/10")
+                        .param("dateInput", "2024-04-10")
                         .param("numberOfShades", "1")
                         .param("startHour", "25")
                         .param("endHour", "30")
@@ -99,9 +111,9 @@ public class HeatMapControllerTest {
 
         String json = result.getResponse().getContentAsString();
         ErrorResponse errorResponse = objectMapper.readValue(json, ErrorResponse.class);
-        assertThat(errorResponse.getMessage()).isEqualTo("Constraint violation");
+        assertThat(errorResponse.getMessage()).isEqualTo("Validation failed");
         assertThat(Integer.parseInt(errorResponse.getCode())).isEqualTo(HttpStatus.BAD_REQUEST.value());
-        assertThat(errorResponse.getFieldErrors()).size().isEqualTo(4);
+        assertThat(errorResponse.getFieldErrors()).size().isEqualTo(3);
     }
 
     @Test
